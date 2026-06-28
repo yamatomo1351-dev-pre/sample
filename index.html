@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a6b4a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>家計簿</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="header__title" id="pageTitle">ダッシュボード</h1>
+      <div class="header__month" id="monthSelector">
+        <button type="button" class="btn-icon" id="prevMonth" aria-label="前月">‹</button>
+        <span id="currentMonthLabel"></span>
+        <button type="button" class="btn-icon" id="nextMonth" aria-label="翌月">›</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Dashboard View -->
+      <section id="view-dashboard" class="view active">
+        <div class="summary-cards">
+          <div class="summary-card summary-card--income">
+            <span class="summary-card__label">収入</span>
+            <span class="summary-card__value" id="totalIncome">¥0</span>
+          </div>
+          <div class="summary-card summary-card--expense">
+            <span class="summary-card__label">支出</span>
+            <span class="summary-card__value" id="totalExpense">¥0</span>
+          </div>
+          <div class="summary-card summary-card--balance">
+            <span class="summary-card__label">収支</span>
+            <span class="summary-card__value" id="totalBalance">¥0</span>
+          </div>
+        </div>
+
+        <div class="calendar-section">
+          <div class="calendar" id="calendar"></div>
+          <p class="calendar-hint">日付をタップして記録を追加・確認</p>
+        </div>
+
+        <div class="recent-section">
+          <h2 class="section-title">最近の記録</h2>
+          <ul class="transaction-list" id="recentTransactions"></ul>
+        </div>
+      </section>
+
+      <!-- Records View -->
+      <section id="view-records" class="view">
+        <div class="filter-bar">
+          <select id="filterType" class="select">
+            <option value="all">すべて</option>
+            <option value="income">収入</option>
+            <option value="expense">支出</option>
+          </select>
+          <select id="filterCategory" class="select">
+            <option value="all">全カテゴリ</option>
+          </select>
+        </div>
+        <ul class="transaction-list" id="allTransactions"></ul>
+        <p class="empty-state" id="recordsEmpty">記録がありません</p>
+      </section>
+
+      <!-- Categories View -->
+      <section id="view-categories" class="view">
+        <div class="category-tabs">
+          <button type="button" class="category-tab active" data-type="expense">支出</button>
+          <button type="button" class="category-tab" data-type="income">収入</button>
+        </div>
+        <ul class="category-list" id="categoryList"></ul>
+        <button type="button" class="btn btn--primary btn--block" id="addCategoryBtn">+ カテゴリを追加</button>
+      </section>
+
+      <!-- Charts View -->
+      <section id="view-charts" class="view">
+        <div class="chart-container">
+          <h2 class="section-title">支出カテゴリ別</h2>
+          <canvas id="pieChart" width="300" height="300"></canvas>
+          <ul class="chart-legend" id="pieLegend"></ul>
+        </div>
+        <div class="chart-container">
+          <h2 class="section-title">日別収支</h2>
+          <canvas id="barChart" width="300" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h2 class="section-title">収入 vs 支出</h2>
+          <div class="comparison-bars" id="comparisonBars"></div>
+        </div>
+      </section>
+
+      <!-- Data View -->
+      <section id="view-data" class="view">
+        <div class="data-section">
+          <h2 class="section-title">エクスポート</h2>
+          <p class="data-desc">データをファイルに保存します</p>
+          <div class="btn-group">
+            <button type="button" class="btn btn--secondary" id="exportJson">JSONで出力</button>
+            <button type="button" class="btn btn--secondary" id="exportCsv">CSVで出力</button>
+          </div>
+        </div>
+        <div class="data-section">
+          <h2 class="section-title">インポート</h2>
+          <p class="data-desc">ファイルからデータを読み込みます（既存データに追加）</p>
+          <div class="btn-group">
+            <label class="btn btn--secondary">
+              JSONから読込
+              <input type="file" id="importJson" accept=".json,application/json" hidden>
+            </label>
+            <label class="btn btn--secondary">
+              CSVから読込
+              <input type="file" id="importCsv" accept=".csv,text/csv" hidden>
+            </label>
+          </div>
+        </div>
+        <div class="data-section data-section--danger">
+          <h2 class="section-title">データ管理</h2>
+          <button type="button" class="btn btn--danger btn--block" id="clearData">すべてのデータを削除</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button type="button" class="nav-item active" data-view="dashboard">
+        <span class="nav-item__icon">📊</span>
+        <span class="nav-item__label">ホーム</span>
+      </button>
+      <button type="button" class="nav-item" data-view="records">
+        <span class="nav-item__icon">📝</span>
+        <span class="nav-item__label">記録</span>
+      </button>
+      <button type="button" class="nav-item" data-view="categories">
+        <span class="nav-item__icon">🏷️</span>
+        <span class="nav-item__label">カテゴリ</span>
+      </button>
+      <button type="button" class="nav-item" data-view="charts">
+        <span class="nav-item__icon">📈</span>
+        <span class="nav-item__label">グラフ</span>
+      </button>
+      <button type="button" class="nav-item" data-view="data">
+        <span class="nav-item__icon">💾</span>
+        <span class="nav-item__label">データ</span>
+      </button>
+    </nav>
+
+    <!-- FAB -->
+    <button type="button" class="fab" id="fabAdd" aria-label="記録を追加">+</button>
+  </div>
+
+  <!-- Transaction Modal -->
+  <div class="modal" id="transactionModal" hidden>
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 id="modalTitle">記録を追加</h2>
+        <button type="button" class="btn-icon modal__close" id="closeTransactionModal" aria-label="閉じる">×</button>
+      </div>
+      <form id="transactionForm">
+        <input type="hidden" id="transactionId">
+        <div class="form-group">
+          <label for="transactionType">種類</label>
+          <div class="type-toggle">
+            <button type="button" class="type-btn active" data-type="expense">支出</button>
+            <button type="button" class="type-btn" data-type="income">収入</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="transactionDate">日付</label>
+          <input type="date" id="transactionDate" class="input" required>
+        </div>
+        <div class="form-group">
+          <label for="transactionAmount">金額</label>
+          <input type="number" id="transactionAmount" class="input" min="1" step="1" placeholder="0" required inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label for="transactionCategory">カテゴリ</label>
+          <select id="transactionCategory" class="select" required></select>
+        </div>
+        <div class="form-group">
+          <label for="transactionMemo">メモ</label>
+          <input type="text" id="transactionMemo" class="input" placeholder="任意">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn--danger" id="deleteTransaction" hidden>削除</button>
+          <button type="submit" class="btn btn--primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal" id="categoryModal" hidden>
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 id="categoryModalTitle">カテゴリを追加</h2>
+        <button type="button" class="btn-icon modal__close" id="closeCategoryModal" aria-label="閉じる">×</button>
+      </div>
+      <form id="categoryForm">
+        <input type="hidden" id="categoryId">
+        <input type="hidden" id="categoryType" value="expense">
+        <div class="form-group">
+          <label for="categoryName">名前</label>
+          <input type="text" id="categoryName" class="input" required placeholder="例: 食費">
+        </div>
+        <div class="form-group">
+          <label for="categoryColor">色</label>
+          <div class="color-picker" id="colorPicker"></div>
+          <input type="hidden" id="categoryColor" value="#e74c3c">
+        </div>
+        <div class="form-group">
+          <label for="categoryIcon">アイコン</label>
+          <div class="icon-picker" id="iconPicker"></div>
+          <input type="hidden" id="categoryIcon" value="🍽️">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn--danger" id="deleteCategory" hidden>削除</button>
+          <button type="submit" class="btn btn--primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Day Detail Modal -->
+  <div class="modal" id="dayModal" hidden>
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 id="dayModalTitle">記録</h2>
+        <button type="button" class="btn-icon modal__close" id="closeDayModal" aria-label="閉じる">×</button>
+      </div>
+      <div class="day-summary" id="daySummary"></div>
+      <ul class="transaction-list" id="dayTransactions"></ul>
+      <button type="button" class="btn btn--primary btn--block" id="addDayTransaction">+ この日に追加</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
